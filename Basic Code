@@ -1,0 +1,53 @@
+#Basic Principal Component Analysis pipeline
+
+#Reference:https://www.datacamp.com/tutorial/pca-analysis-r
+
+install.packages("corrr","ggcorrplot","FactoMineR")
+
+library('corrr')
+library(ggplot2)
+library('ggcorrplot')
+library('FactoMineR')
+library(factoextra)
+library(devtools)
+
+setwd("D:/PCA")
+
+Data <- read.table("ALL 204.csv", header = TRUE, sep=",")
+
+Data_Numerical <- Data[,-c(1:2)] #Deletes first two columns, in this case the first two columns are not needed
+
+#Note: No scaling was done in numerical data since units are the same. if the observations are not of the same units, consider scaling using scale(). 
+
+corr_matrix <- cor(Hyp_Data_Numerical) #to check whether your variables are correlated
+ggcorrplot(corr_matrix)
+
+data.pca <- princomp(corr_matrix)
+
+#Run this first so you can export the summary of the PCA output as a CSV file. Reference: https://stackexchange.com/users/1509604/roland ; https://stackoverflow.com/questions/58395013/how-to-print-write-or-export-princomp-results-to-a-csv-file
+as.
+data.frame.summary.princomp <- function(x, ...) {
+  vars <- x$sdev^2
+  vars <- vars/sum(vars)
+  type.convert(
+    as.data.frame(
+      rbind(`Standard deviation` = x$sdev, `Proportion of Variance` = vars, 
+            `Cumulative Proportion` = cumsum(vars))
+    )
+  )
+}
+
+data.pca.summary <- as.data.frame(summary(princomp(Hyp_Data_Numerical, cor = TRUE)))
+
+write.csv(data.pca.summary, "D:/PCA/PCA-ALL-204-Output-Summary.csv") #do not forget to change filename for each export
+
+PCA.Loadings <- data.pca$loadings[,1]
+
+write.csv(PCA.Loadings, "D:/PCA/PCA-ALL-204-Component-Loadings.csv")
+
+fviz_eig(data.pca, addlabels = TRUE) #percentage of variances explain by the PC
+
+fviz_pca_var(data.pca, col.var = "cos2", gradient.cols = c("green", "yellow", "gray"), repel = TRUE) #PCA Biplot
+
+fviz_cos2(data.pca, choice = "var", axes = 1)
+
